@@ -22,6 +22,7 @@ packagedir: package_root Distribution welcome.html
 	cp package.sh $(PACKAGE_DIR)/
 	cd $(PACKAGE_DIR) && pkgbuild --analyze --root ./root component.plist
 	echo -n $(PODMAN_VERSION) > $(PACKAGE_DIR)/VERSION
+	cp LICENSE $(PACKAGE_DIR)/LICENSE.txt
 
 package_root: get_podman
 	mkdir -p $(PACKAGE_ROOT)/tmp-podman-desktop
