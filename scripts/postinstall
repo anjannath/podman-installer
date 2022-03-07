@@ -1,0 +1,8 @@
+#!/bin/bash
+set -e
+
+cp /tmp/tmp-podman-desktop/podman "$HOME"/bin/
+rm -rf /tmp/tmp-podman-desktop
+chmod 755 "$HOME"/bin/podman
+
+# add podman config env variables to shell profiles
