@@ -8,6 +8,8 @@ PACKAGE_DIR ?= out/packaging
 TMP_DOWNLOAD ?= tmp-download
 PACKAGE_ROOT ?= root
 
+default: packagedir
+
 get_podman:
 	mkdir -p $(TMP_DOWNLOAD)
 	cd $(TMP_DOWNLOAD) && curl -sLO $(PODMAN_RELEASE_URL) && unzip *.zip podman-$(PODMAN_VERSION)/podman
