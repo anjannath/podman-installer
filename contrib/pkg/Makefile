@@ -1,8 +1,14 @@
 SHELL := bash
 
-ARCH ?= arm64
-PODMAN_VERSION ?= 3.4.4
-PODMAN_RELEASE_URL ?= https://github.com/containers/podman/releases/download/v$(PODMAN_VERSION)/podman-remote-release-darwin.zip
+ARCH ?= aarch64
+PODMAN_VERSION ?= 0.0.1
+GVPROXY_VERSION ?= 0.0.1
+MAC_HELPER_VERSION ?= 0.0.1
+QEMU_VERSION ?= 0.2
+PODMAN_RELEASE_URL ?= https://github.com/containers-contribs/podman/releases/download/v$(PODMAN_VERSION)/podman-$(ARCH)
+GVPROXY_RELEASE_URL ?= https://github.com/containers-contribs/podman/releases/download/v$(GVPROXY_VERSION)/gvproxy-$(ARCH)
+MAC_HELPER_RELEASE_URL ?= https://github.com/containers-contribs/podman/releases/download/v$(MAC_HELPER_VERSION)/podman-mac-helper-$(ARCH)
+QEMU_RELEASE_URL ?= https://github.com/containers-contribs/qemu-macos-build/releases/download/$(QEMU_VERSION)/qemu-macos-$(ARCH).tar.xz
 BUILD_DIR ?= out
 PACKAGE_DIR ?= out/packaging
 TMP_DOWNLOAD ?= tmp-download
@@ -12,7 +18,19 @@ default: packagedir
 
 get_podman:
 	mkdir -p $(TMP_DOWNLOAD)
-	cd $(TMP_DOWNLOAD) && curl -sLO $(PODMAN_RELEASE_URL) && unzip *.zip podman-$(PODMAN_VERSION)/podman
+	cd $(TMP_DOWNLOAD) && curl -sLo podman $(PODMAN_RELEASE_URL)
+
+get_gvproxy:
+	mkdir -p $(TMP_DOWNLOAD)
+	cd $(TMP_DOWNLOAD) && curl -sLo gvproxy $(GVPROXY_RELEASE_URL)
+
+get_qemu:
+	mkdir -p $(TMP_DOWNLOAD)
+	cd $(TMP_DOWNLOAD) && curl -sLO $(QEMU_RELEASE_URL)
+
+get_mac_helper:
+	mkdir -p $(TMP_DOWNLOAD)
+	cd $(TMP_DOWNLOAD) && curl -sLo podman-mac-helper $(MAC_HELPER_RELEASE_URL)
 
 packagedir: package_root Distribution welcome.html
 	mkdir -p $(PACKAGE_DIR)
@@ -26,20 +44,19 @@ packagedir: package_root Distribution welcome.html
 	echo -n $(PODMAN_VERSION) > $(PACKAGE_DIR)/VERSION
 	cp LICENSE $(PACKAGE_DIR)/Resources/LICENSE.txt
 
-package_root: get_podman
-	mkdir -p $(PACKAGE_ROOT)/tmp-podman-desktop
-	cp $(TMP_DOWNLOAD)/podman-$(PODMAN_VERSION)/podman $(PACKAGE_ROOT)/tmp-podman-desktop/podman
-	chmod a+x $(PACKAGE_ROOT)/tmp-podman-desktop/podman
+package_root: get_podman get_gvproxy get_qemu get_mac_helper
+	mkdir -p $(PACKAGE_ROOT)/podman/bin $(PACKAGE_ROOT)/podman/qemu
+	cp $(TMP_DOWNLOAD)/podman $(TMP_DOWNLOAD)/gvproxy $(TMP_DOWNLOAD)/podman-mac-helper $(PACKAGE_ROOT)/podman/bin/
+	tar -C $(PACKAGE_ROOT)/podman/qemu -xf $(TMP_DOWNLOAD)/qemu-macos-$(ARCH).tar.xz
+	chmod a+x $(PACKAGE_ROOT)/podman/bin/*
 
 %: %.in
 	@sed -e 's/__VERSION__/'$(PODMAN_VERSION)'/g' $< >$@
 
+out/podman-macos.pkg: packagedir
+	cd $(PACKAGE_DIR) && ./package.sh ..
+
 .PHONY: clean
 clean:
-	rm -rf $(PACKAGE_DIR) $(TMP_DOWNLOAD) Distribution welcome.html
+	rm -rf $(BUILD_DIR) $(TMP_DOWNLOAD) $(PACKAGE_ROOT) Distribution welcome.html
 
-# replace version in the files
-
-# download podman binaries based on arch and version
-
-# build the distribution dir tree

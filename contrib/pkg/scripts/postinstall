@@ -1,8 +1,23 @@
 #!/bin/bash
 set -e
 
-cp /tmp/tmp-podman-desktop/podman "$HOME"/bin/
-rm -rf /tmp/tmp-podman-desktop
-chmod 755 "$HOME"/bin/podman
+# create symlinks to podman and podman-mac-helper
+ln -s /Applications/podman/bin/podman "$HOME"/bin/podman
+ln -s /Applications/podman/bin/podman-mac-helper "$HOME"/bin/podman-mac-helper
 
-# add podman config env variables to shell profiles
+chmod 755 "$HOME"/bin/podman "$HOME"/bin/podman-mac-helper
+
+# create containers.conf config file to set the location of helper binaries
+cat << EOF > "$HOME"/.config/containers/containers.conf
+[containers]
+
+[engine]
+    helper_binaries_dir=["/Applications/podman/bin", "/Applications/podman/qemu/bin"]
+[machine]
+
+[network]
+
+[secrets]
+
+[configmaps]
+EOF

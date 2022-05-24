@@ -16,19 +16,21 @@ function sign() {
   if [ -f "${entitlements}" ]; then
       opts="--entitlements ${entitlements}"
   fi
-  codesign --deep --sign "${CODESIGN_IDENTITY}" --options runtime --force ${opts} "$1"
+  codesign --deep --sign "${CODESIGN_IDENTITY}" --options runtime --force "${opts}" "$1"
 }
 
-binDir="${BASEDIR}/root/tmp-podman-desktop"
+binDir="${BASEDIR}/root/podman/bin"
 
 version=$(cat "${BASEDIR}/VERSION")
 
 sign "${binDir}/podman"
+sign "${binDir}/gvproxy"
+sign "${binDir}/podman-mac-helper"
 
-pkgbuild --identifier com.redhat.podman --version ${version} \
+pkgbuild --identifier com.redhat.podman --version "${version}" \
   --scripts "${BASEDIR}/scripts" \
   --root "${BASEDIR}/root" \
-  --install-location /tmp \
+  --install-location /Applications \
   --component-plist "${BASEDIR}/component.plist" \
   "${OUTPUT}/podman.pkg"
 
@@ -41,5 +43,5 @@ rm "${OUTPUT}/podman.pkg"
 if [ ! "${NO_CODESIGN}" -eq "1" ]; then
   productsign --sign "${PRODUCTSIGN_IDENTITY}" "${OUTPUT}/podman-unsigned.pkg" "${OUTPUT}/podman-desktop-macos.pkg"
 else
-  mv "${OUTPUT}/podman-unsigned.pkg" "${OUTPUT}/podman-desktop-macos.pkg"
+  mv "${OUTPUT}/podman-unsigned.pkg" "${OUTPUT}/podman-macos.pkg"
 fi

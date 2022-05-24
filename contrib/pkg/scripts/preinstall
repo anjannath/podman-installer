@@ -3,4 +3,4 @@ set -e
 
 [ -d "$HOME"/bin ] || mkdir "$HOME"/bin
 
-rm -f "$HOME"/bin/podman
+rm -f "$HOME"/bin/podman "$HOME"/bin/podman-mac-helper
